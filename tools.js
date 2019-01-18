@@ -2,9 +2,10 @@ function intersecting(mPos, rect) {
   return mPos.x > rect.x && mPos.x < rect.x+rect.width && mPos.y > rect.y && mPos.y < rect.y + rect.height;
 }
 
-function intersecting(mPos, x, y) {
+/*function intersecting(mPos, x, y) {
+  console.log("what");
   return Math.hypot(mPos.x - x, mPos.y - y) < 5;
-}
+}*/
 
 function getMousePos(canvas, evt) {
   var rect = canvas.getBoundingClientRect();
