@@ -24,7 +24,7 @@ function play() {
   });
 
   document.addEventListener('keypress', function(evt) {
-
+    startPlayerTurn();
   });
 
 
@@ -53,24 +53,19 @@ function draw() {
   ctx.fillRect(0,0,canvasWidth,canvasHeight);
 
   for(var i = 0; i < card_areas.length; i++) {
-    if(card_areas[i].type == "deckPlayer" || card_areas[i].type == "deckEnemy") {
-      ctx.fillStyle = "black";
-    } else {
+    if(card_areas[i].type != "deckPlayer" && card_areas[i].type != "deckEnemy") {
       ctx.fillStyle = "white";
+      ctx.fillRect(card_areas[i].x/100*canvasWidth,card_areas[i].y/100*canvasHeight,card_areas[i].width/100*canvasWidth,card_areas[i].height/100*canvasHeight);
     }
-    ctx.fillRect(card_areas[i].x/100*canvasWidth,card_areas[i].y/100*canvasHeight,card_areas[i].width/100*canvasWidth,card_areas[i].height/100*canvasHeight);
 
-    //TODO: Remove doing this caluclation every draw loop. We only need to calculate once, when card is assigned to it's area.
     if(card_areas[i].type == "clientPlayer" || card_areas[i].type == "shared") {
       for(var j = 0; j < card_areas[i].cards.length; j++) {
-        ctx.fillStyle = card_areas[i].cards[j].color;
-        ctx.fillRect(card_areas[i].cards[j].x,card_areas[i].cards[j].y,card_areas[i].cards[j].width,card_areas[i].cards[j].height);
+        renderCard(card_areas[i].cards[j]);
       }
     }
 
     if(draggingCard != null) {
-      ctx.fillStyle = draggingCard.color;
-      ctx.fillRect(draggingCard.x,draggingCard.y,draggingCard.width,draggingCard.height);
+      renderCard(draggingCard);
     }
 
   }
@@ -81,7 +76,6 @@ function update() {
     draggingCard.x = mousePos.x;
     draggingCard.y = mousePos.y;
   }
-
 }
 
 function refresh_moveable_cards() {
@@ -121,6 +115,16 @@ function processClick(mPos) {
 function processLetGo() {
   console.log("drop");
   var tempCards = card_areas[draggingCard.parentAreaIndex].cards;
+  for(var i = 0; i < card_areas.length; i++) {
+    rect = {x:card_areas[i].x/100*canvasWidth,y:card_areas[i].y/100*canvasHeight, width:card_areas[i].width/100*canvasWidth,height: card_areas[i].height/100*canvasHeight};
+    if(intersecting(mousePos,rect)) {
+      //runs custom designed method to see if you can play to this zone.
+      if(draggingCard.move(card_areas[i].name)) {
+        tempCards = card_areas[i].cards;
+      }
+    }
+  }
+
   var inserted = false;
   for(var i = 0; i < tempCards.length; i++) {
     if(tempCards[i].x + tempCards[i].width/2 > draggingCard.x) {

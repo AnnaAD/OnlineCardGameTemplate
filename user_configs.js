@@ -1,13 +1,39 @@
 const game_name = "MY CARD GAME!";
-var card_areas = [{type:"clientPlayer", x:0, y:75, width: 100, height:25, cards: [], card_position_moveable:true},
-                    {type:"shared", x:0, y:50-25/2, width: 100, height:25, cards: []},
-                    {type:"enemyPlayer", x:0, y:0, width: 100, height:25, cards: []},
-                    {type:"deckPlayer", x:0, y:0, width: 15, height:25, cards: []}];
+var card_areas = [{name: "playerHand", type:"clientPlayer", x:0, y:80, width: 100, height:20, cards: [], card_position_moveable:true},
+                    {name: "enemyLand", type:"shared", x:0, y:25, width: 100, height:12, cards: []},
+                    {name: "enemyBattlefield", type:"shared", x:0, y:25 + 12, width: 100, height:12, cards: []},
+                    {name: "playerBattlefield", type:"shared", x:0, y:25 + 12*2, width: 100, height:12, cards: []},
+                    {name: "playerLand", type:"shared", x:0, y:25 + 12*3, width: 100, height:12, cards: []},
+
+                    {name: "enemyHand", type:"enemyPlayer", x:0, y:0, width: 100, height:20, cards: []},
+                    {name: "playerDeck", type:"deckPlayer", x:0, y:0, width: 15, height:25, cards: []}];
+
+
+var player_stats = {health:20, mana:10};
+
+//CUSTOM METHOD TO RUN ON START OF PLAYER'S TURN
+function startPlayerTurn() {
+  console.log('turn');
+  drawCard("playerDeck", "playerHand");
+  refresh_moveable_cards();
+}
+
+//Game Engine will call this function if it exists for a card, when attempting to drag it to another area, to check if legal.
+//Define as you wish and assign different methods to your different cards!
+function customMoveCheck(targetArea) {
+  if(targetArea == "playerBattlefield" && this.cost <= player_stats.mana) {
+    player_stats.mana -= this.cost;
+    return true;
+  }
+  return false;
+}
+
+//TESTING
 
 var deckCards = [];
 
 for(var i = 0; i < 5; i++) {
-  deckCards.push({color:getRandomColor()});
+  deckCards.push({color:getRandomColor(), move:customMoveCheck, cost: 5});
 }
 
-card_areas[0].cards = deckCards;
+card_areas[6].cards = deckCards;
