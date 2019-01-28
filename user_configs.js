@@ -10,12 +10,20 @@ var card_areas = [{name: "playerHand", type:"clientPlayer", x:0, y:80, width: 10
 
 
 var player_stats = {health:20, mana:10};
+var turnStep = 0; //can assign own meaning to each turn step. Goes up by one each time player presses advance turn.
 
 //CUSTOM METHOD TO RUN ON START OF PLAYER'S TURN
-function startPlayerTurn() {
-  console.log('turn');
-  drawCard("playerDeck", "playerHand");
-  refresh_moveable_cards();
+function advanceTurn() {
+  if(turnStep == 0) {
+    drawCard("playerDeck", "playerHand");
+    refresh_moveable_cards();
+  }
+
+  turnStep++;
+
+  if(turnStep == 4) {
+    turnStep = 0;
+  }
 }
 
 //Game Engine will call this function if it exists for a card, when attempting to drag it to another area, to check if legal.
@@ -26,6 +34,10 @@ function customMoveCheck(targetArea) {
     return true;
   }
   return false;
+}
+
+function sampleCustomAbilityDefinition() {
+
 }
 
 //TESTING

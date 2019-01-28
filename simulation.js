@@ -8,6 +8,7 @@ var mousePos = {x:0,y:0};
 
 
 var moveable_cards = [];
+var visible_cards = [];
 var draggingCard = null;
 
 
@@ -21,10 +22,11 @@ function play() {
 
   canvas.addEventListener('mousemove', function(evt) {
     mousePos = getMousePos(canvas,evt);
+    checkZoom(mousePos);
   });
 
   document.addEventListener('keypress', function(evt) {
-    startPlayerTurn();
+    advanceTurn();
   });
 
 
@@ -68,6 +70,10 @@ function draw() {
       renderCard(draggingCard);
     }
 
+    if(cardZoomed != null) {
+      renderCard(cardZoomed);
+    }
+
   }
 }
 
@@ -80,6 +86,7 @@ function update() {
 
 function refresh_moveable_cards() {
   moveable_cards = [];
+  visible_cards = [];
   for(var i = 0; i < card_areas.length; i++) {
     var cardHeight = card_areas[i].height/100*canvasHeight;
     var cardWidth = cardHeight * (2.5/3.5);
@@ -93,12 +100,19 @@ function refresh_moveable_cards() {
       if(card_areas[i].card_position_moveable == true) {
         moveable_cards.push(card_areas[i].cards[j]);
       }
+
+      if(card_areas[i].type == "shared" || card_areas[i].type == "clientPlayer") {
+        visible_cards.push(card_areas[i].cards[j]);
+      }
     }
   }
 }
 
 
 function processClick(mPos) {
+  if(draggingCard != null) {
+    processLetGo();
+  }
   for(var i = 0; i < moveable_cards.length; i++) {
     if(intersecting(mPos, moveable_cards[i])) {
       draggingCard = moveable_cards[i];
@@ -112,12 +126,35 @@ function processClick(mPos) {
   }
 }
 
+var oldSize = {};
+
+var cardZoomed = {};
+
+function checkZoom(mPos) {
+  cardZoomed.width = oldSize.width;
+  cardZoomed.height = oldSize.height;
+  cardZoomed.y = oldSize.y;
+  for(var i = 0; i < visible_cards.length; i++) {
+    if(intersecting(mPos, visible_cards[i])) {
+      oldSize.width = visible_cards[i].width;
+      oldSize.height = visible_cards[i].height;
+      oldSize.y= visible_cards[i].y;
+
+
+      visible_cards[i].width *= 1.5;
+      visible_cards[i].height *= 1.5;
+      visible_cards[i].y -= oldSize.height*0.5;
+      cardZoomed = visible_cards[i];
+    }
+  }
+}
+
 function processLetGo() {
   console.log("drop");
   var tempCards = card_areas[draggingCard.parentAreaIndex].cards;
   for(var i = 0; i < card_areas.length; i++) {
     rect = {x:card_areas[i].x/100*canvasWidth,y:card_areas[i].y/100*canvasHeight, width:card_areas[i].width/100*canvasWidth,height: card_areas[i].height/100*canvasHeight};
-    if(intersecting(mousePos,rect)) {
+    if(i != draggingCard.parentAreaIndex && intersecting(mousePos,rect)) {
       //runs custom designed method to see if you can play to this zone.
       if(draggingCard.move(card_areas[i].name)) {
         tempCards = card_areas[i].cards;
